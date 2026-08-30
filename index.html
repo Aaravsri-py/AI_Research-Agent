@@ -4,50 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Autonomous Research Assistant Portal</title>
-    <!-- Official n8n Chat Stylesheet -->
+    <!-- Official n8n Chat CSS Assets -->
     <link href="https://jsdelivr.net" rel="stylesheet" />
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-        }
-        #chat-container {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-        }
-        .troubleshoot-bar {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 10px;
-            text-align: center;
-            font-size: 0.9em;
-            border-bottom: 1px solid #ffeeba;
-        }
-    </style>
 </head>
 <body>
-
-    <div class="troubleshoot-bar">
-        ⚠️ <strong>Not loading?</strong> Ensure your n8n workflow is saved and the <strong>Active toggle (top right) is turned ON</strong>!
-    </div>
-
-    <!-- The target element where the full screen chat widget will be built -->
-    <div id="chat-container"></div>
 
     <script type="module">
         import { createChat } from 'https://jsdelivr.net';
 
         createChat({
-            target: '#chat-container', // Forces it to bind inside our visual container element
             webhookUrl: 'https://n8n.cloud',
-            mode: 'fullscreen',
+            mode: 'window', // Uses standard built-in overlay sizing
             title: 'Autonomous AI Research Assistant',
             subtitle: 'Powered by n8n Workflows + Tavily Search + Groq LLM',
             placeholder: 'Type any research topic...',
