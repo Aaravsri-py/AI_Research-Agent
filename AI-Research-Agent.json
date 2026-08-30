@@ -1,0 +1,191 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "563c965e-0c7d-44ca-ada6-5b5b3004fc09",
+      "name": "When chat message received",
+      "webhookId": "44cdb699-aeb9-4a87-ae07-7663f024586a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da656117-fe02-41a9-9869-d99c24f3a5cf",
+              "name": "research_topic",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "09053593-5f89-43d1-9270-5aeca5c8a8d8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tavily.com",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "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"
+            },
+            {
+              "name": "query",
+              "value": "={{ $json.research_topic }} {{ $json.research_topic }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "afa1cfee-da2d-4ab2-b115-05922ce598bf",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Research Topic: {{ $json.research_topic }}\nRaw Search Data from Tavily: {{ $('HTTP Request').item.json.results }}\n",
+        "options": {
+          "systemMessage": "You are a heYou are an expert production-grade research assistant. Analyze the raw search data provided to you. Condense the information, eliminate duplicate facts, organize it into a structured layout with an Overview, Core Findings, and a Conclusion. Avoid raw formatting; output purely structured markdown segments.\nlpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "858d6cd2-c9f2-4489-9010-92dfd0f40cf0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3.8-27b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        544,
+        208
+      ],
+      "id": "67a2922a-bc0b-46a6-b8af-1b8822541167",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "IeaCerOyYxkhZPnP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Retrieve the topic and the AI's generated report summary text\nconst topic = $input.item.json.research_topic || \"AI Web Research Summary\";\nconst markdownContent = $input.item.json.output || \"No report generated.\";\n\n// Convert basic markdown paragraphs and bold tags to HTML elements for readability\nlet formattedBody = markdownContent\n  .replace(/\\n\\n/g, '</p><p>')\n  .replace(/\\n/g, '<br>')\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>');\n\n// Generate a professional styled production-grade HTML layout\nconst htmlReport = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Research Report: ${topic}</title>\n    <style>\n        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; background-color: #f9f9f9; }\n        .report-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 8px solid #0052cc; }\n        h1 { color: #0052cc; font-size: 2.5em; margin-bottom: 10px; border-bottom: 2px solid #eaeaea; padding-bottom: 15px; }\n        .timestamp { color: #777; font-size: 0.9em; margin-bottom: 30px; font-style: italic; }\n        p { margin-bottom: 20px; font-size: 1.1em; color: #4a4a4a; }\n        strong { color: #111; }\n    </style>\n</head>\n<body>\n    <div class=\"report-card\">\n        <h1>Research Report: ${topic}</h1>\n        <div class=\"timestamp\">Generated autonomously via AI Research Agent on: ${new Date().toLocaleDateString()}</div>\n        <p>${formattedBody}</p>\n    </div>\n</body>\n</html>\n`;\n\nreturn [{ json: { html_report: htmlReport } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "81ee02c6-fab1-41b5-91d2-96ee4869c216",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d6514941-66d9-48c4-b76c-5a09f45afc23",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f3d4d83c01cf6f62cd68737dff5e7b1b46af3328f45c07549ba8b10be2d63567"
+  },
+  "nodeGroups": [],
+  "id": "p8xV2qGyfzznSSDJ",
+  "tags": []
+}
